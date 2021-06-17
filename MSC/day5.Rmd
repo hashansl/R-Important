@@ -1,0 +1,58 @@
+---
+title: "day5"
+author: "Hashan"
+date: "5/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library("readxl")
+barsteel <- read_excel("barsteel.xlsx")
+```
+
+
+```{r}
+head(barsteel)
+str(barsteel)
+
+df <- as.data.frame(barsteel)
+
+```
+
+
+```{r}
+#box M test needs DF as input
+library(biotools)
+boxM(df[1:2],df[,3])
+```
+
+```{r}
+library(MVN)
+mvn(data = barsteel[,1:2], mvnTest = "mardia")
+
+```
+
+```{r}
+mvn(data = barsteel[,1:2], mvnTest = "mardia",multivariatePlot="qq")
+
+```
+
+```{r}
+mvn(data=barsteel[,1:2], mvnTest="mardia",multivariateOutlierMethod="adj")
+
+```
+
+```{r}
+# Consider the interaction effects as well
+
+library(car)
+
+barsteel.mod <- lm(cbind(torque, strain)~velocity*lubricants, data=df)
+Manova(barsteel.mod, test.statistic="Roy")
+
+```
+

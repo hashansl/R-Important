@@ -1,0 +1,57 @@
+---
+title: "day4"
+author: "Hashan"
+date: "5/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(heplots)
+library(tidyr)
+library(MVN)
+library(biotools)
+```
+
+```{r}
+data(RootStock)
+head(RootStock)
+str(RootStock)
+```
+```{r}
+mvn(data=RootStock[,2:5], mvnTest = "mardia")
+```
+
+```{r}
+# Adjusted chi-square Q-Q plot
+mvn(data=RootStock [,2:5], mvnTest="mardia",multivariateOutlierMethod="adj")
+# chi-square Q-Q plot
+mvn(data = RootStock [,2:5], mvnTest = "mardia",multivariatePlot="qq")
+```
+```{r}
+#biotools
+boxM(RootStock[2:5],RootStock[,1])
+```
+```{r}
+root.manova <- lm(cbind(RootStock$girth4, RootStock$ext4, RootStock$girth15,
+                        RootStock$weight15)~ rootstock, data = RootStock)
+Manova(root.manova)
+```
+```{r}
+Manova(root.manova, test='Wilks')
+Manova(root.manova, test='Hotelling-Lawley')
+Manova(root.manova,test='Roy')
+
+```
+
+```{r}
+# H and E for Pillai test
+summary(Manova(root.manova))
+
+# H and E for Wilks test
+summary(Manova(root.manova), test='Wilks')
+```
+
