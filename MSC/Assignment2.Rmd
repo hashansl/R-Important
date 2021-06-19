@@ -1,0 +1,289 @@
+---
+title: "Assignment"
+author: "PGIS/M/DTS/20/09"
+date: "6/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<html>
+
+<h1 style = "font-size:45px;font-family: Comic Sans MS;text-align: center;background-color:#800000;color:#FFFFFF">Assignment 2</h1>
+
+<h4>The Three Main Types of Audio Features Extraction we will discuss:</h4>
+
+</html>
+
+
+
+(i) The dataset can be obtained from  https://stats.idre.ucla.edu/stat/data/mmreg.csv.  Name the variables 
+
+```{r}
+dataset <- read.csv("./mmreg.csv", header = TRUE)
+newheaders <- c("Control","Concept","Motivation","Read","Write","Math","Science","Sex")
+colnames(dataset) <- newheaders
+#head(dataset)
+
+library(knitr)
+library(kableExtra)
+kable(dataset[0:10,])
+```
+(ii) Obtain the summary statistics of each numerical variable and find correlation matrix for psychological and academic variables separately, and the cross correlation of the two sets using matcor function. Show visualization of these correlations using img.matcor function in CCA R package.
+
+
+summary statistics.
+```{r}
+summary(dataset)
+```
+Correlation matrix for psychological and academic variables,
+```{r}
+#Divide the dataset as psychological and academic
+
+
+psycho <- dataset[,1:3]
+acadamic <--dataset[,4:7]
+
+par(mfrow=c(1,2))
+boxplot(psycho, main="Physiological variables",las=2, col=c("red","green","royalblue2"))
+boxplot(acadamic, main="Acadamic variables",las=2, col =c("red","sienna","palevioletred1","royalblue2","green"))
+
+```
+Now, we find correlation matrix for psychological variables and Acadamic separately, and the two sets of variables together using matcor function.
+```{r, echo=FALSE}
+library(CCA)
+cormat=matcor(psycho,acadamic)
+cormat
+```
+In X variables (psychological) set, the variable Control is have Negligible Postive correlation with variable Concept and Motivation. Also, variable Concept and Motivation have Negligible Positive correlation <br><br>
+
+In Y variables (Acadamic) set, the variable Read is have Moderate positive correlation with variable Write, Math, Science. The variable Write is have Moderate positive correlation with the variable Math and Science. Also, the variable Math have a Moderate positive correlation with Science. 
+<br><br>
+
+When considering the correlation between X set of variables with Y set of variables, Control with Read, Write, Math, Science have Low negative correlation.
+
+<br><br>
+Now, we visualize the correlation.
+
+```{r, echo=FALSE}
+img.matcor(cormat, type=1)
+img.matcor(cormat, type=3)
+```
+
+Correlation among the two sets are somewhat low.
+Before applying the canonical correlation analysis, we check the multivariate normality of data.
+```{r}
+library(MVN)
+# Apply Madia test for multivariate normality
+mvn(data = dataset,subset = NULL,mvnTest = "ma")
+```
+
+
+```{r}
+# Apply Henze-Zirkler test for multivariate normality
+mvn(data = dataset ,subset = NULL,mvnTest = "hz")
+```
+
+```{r}
+# Apply Royston test for multivariate normality
+mvn(data = dataset,subset = NULL,mvnTest = "royston")
+```
+
+above three tests deny the assumption of multivariate normality. Mardia Kurtosis test follows multivariate normality.
+When considering the univariate normality, Shapiro-Wilk test confirms that all variables are non-normal.
+<br><br>
+
+Now, we the check outliers by using the “adjusted robust Mahalanobis distance”.
+
+```{r}
+result <- mvn(data = dataset[1:7] ,multivariateOutlierMethod = "adj",showOutliers = TRUE, showNewData = TRUE)
+```
+When we remove all outliers, all the test seems to fail. let's remove few extreame ourlier,
+
+```{r}
+dataset_new <- dataset[-c(321),]
+```
+now check the multivariate normality of data. Still univariate tests fails.
+```{r}
+library(MVN)
+# Apply Madia test for multivariate normality
+mvn(data = dataset_new,subset = NULL,mvnTest = "ma")
+```
+Let's try to replace the outliers with median values,
+
+```{r}
+outlier <- function(x) {
+ x[x < quantile(x,0.25) - 1.5 * IQR(x) | x > quantile(x,0.75) + 1.5 * IQR(x)] <- median(x)
+ x
+}
+
+dataset_new <- data.frame(lapply(dataset_new[,1:7], outlier))
+
+```
+
+
+```{r}
+library(MVN)
+# Apply Madia test for multivariate normality
+mvn(data = dataset_new,subset = NULL,mvnTest = "ma")
+```
+```{r}
+# Apply Henze-Zirkler test for multivariate normality
+mvn(data = dataset_new ,subset = NULL,mvnTest = "hz")
+```
+
+```{r}
+# Apply Royston test for multivariate normality
+mvn(data = dataset_new,subset = NULL,mvnTest = "royston")
+```
+Dataset still follows only Mardia Kurtosis test multivariate normality.
+
+<br>
+
+Let's visualize some of the variables.. After and before replacing with median values
+```{r}
+#before
+
+library(ggplot2)
+ggplot(dataset, aes(x=Control)) + 
+    geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
+                   binwidth=.5,
+                   colour="black", fill="white") +
+    geom_density(alpha=.2, fill="#FF6666")  # Overlay with transparent density plot
+
+
+#After
+
+# Histogram overlaid with kernel density curve
+ggplot(dataset_new, aes(x=Control)) + 
+    geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
+                   binwidth=.5,
+                   colour="black", fill="white") +
+    geom_density(alpha=.2, fill="#FF6666")  # Overlay with transparent density plot
+
+
+```
+
+Now we are going to use a datase where, extrame outlier removed, other outliers replaced with median dataset
+```{r}
+newphy <- dataset_new
+kable(newphy) %>% kable_styling() %>% scroll_box(height = "200px")
+```
+Now, test the multivariate normality for the new data set.
+```{r}
+# Apply Madia test for multivariate normality
+mvn(data = newphy,subset = NULL,mvnTest = "ma")
+```
+
+```{r}
+# Apply Henze-Zirkler test for multivariate normality
+mvn(data = newphy,subset = NULL,mvnTest = "hz")
+
+```
+
+
+```{r}
+# Apply Royston test for multivariate normality
+mvn(data = newphy,subset = NULL,mvnTest = "royston")
+```
+
+
+(iii) Obtain raw canonical correlations and the normalized canonical coefficients.
+<br><br>
+
+Now, we obtain raw canonical correlations.
+
+```{r}
+newy= newphy[,1:3]
+newx=newphy[,4:7]
+library(CCP)
+# Find canonical correlations
+raw_cca<-cancor(newx, newy)
+raw_cca
+```
+Then, we obtain the normalized canonical variates.
+
+```{r}
+newy= newphy[,1:3]
+newx=newphy[,4:7]
+library(CCP)
+# Find canonical correlations
+cca<-cancor(scale(newx, scale=T, center=T),scale(newy, scale=T,center=T))
+cca
+```
+(iv) Test the significance of the canonical correlations and find canonical loadings. Then, show the significance canonical variates.
+
+<br>br>
+
+```{r}
+
+nrow(newphy)
+```
+
+
+
+
+we test the significance of the canonical correlations.
+```{r}
+rho<-cca$cor
+## Calculate p-values using the F-approximations of different test statistics:
+p.asym(rho,599,3,4,tstat="Wilks") #*Here N=599, p=3,q=4 
+
+```
+
+
+```{r}
+p.asym(rho, 599,3,4, tstat = "Hotelling")
+
+```
+
+```{r}
+p.asym(rho, 599,3,4, tstat = "Pillai")
+
+```
+
+
+```{r}
+p.asym(rho, 599,3,4, tstat = "Roy")
+
+```
+
+
+```{r}
+## Plot the F-approximation for Wilks' Lambda, considering 3, 2, or 1 canonical correlation(s):
+res1 <- p.asym(rho, 599,3,4)
+```
+
+```{r}
+plt.asym(res1,rhostart=1)
+```
+
+```{r}
+plt.asym(res1,rhostart=2)
+
+```
+
+```{r}
+plt.asym(res1,rhostart=3)
+
+```
+Note that all tests indicate that the three canonical correlations are significant at 5% level.
+
+Look at the plot of the first canonical variates
+```{r}
+xx<-scale(newx,scale=T,center=T)
+yy<-scale(newy,scale=T,center=T)
+scorex<-xx%*%cca$xcoef[,1]
+scorey<-yy%*%cca$ycoef[,1]
+plot(scorex,scorey,type="n")
+text(scorex,scorey,row.names(newphy),cex=.6)
+```
+
+To obtain the canonical loadings, we can run the following codes.
+
+
+```{r}
+cancor<-cc(newx,newy)
+comput(newx,newy,cancor)[3:6]
+```

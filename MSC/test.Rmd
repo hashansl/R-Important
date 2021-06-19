@@ -1,0 +1,20 @@
+---
+title: "Lec 7 - Canonical Correlation Analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Analysing fitness data using Canonical Correlation
+Three physiological and three exercise variables are measured on twenty middle-aged men in a fitness club. <br>
+Physiological variables (Y): Weight, Waist, Pulse <br>
+Exercise variables (X): Chins, Situps, Jumps
+
+
+
+```{r}
+
+```
+
