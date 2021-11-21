@@ -1,0 +1,192 @@
+---
+title: "Assignment6"
+author: "PGIS/M/DTS/20/09"
+date: "9/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Q1
+```{r}
+library(ca)
+```
+
+
+```{r}
+data(smoke)
+```
+
+```{r}
+head(smoke)
+```
+
+This dataset contains frequencies of smoking habits (none, light, medium and heavy) for staff groups (senior managers, junior managers, senior employees, junior employees and secretaries) in a fictional company.
+
+```{r}
+summary(smoke)
+```
+
+
+
+
+```{r}
+smoke_ca = ca(smoke)
+```
+
+
+```{r}
+smoke_ca
+```
+most of the variance explained by the two Dimensions
+
+
+```{r}
+# sqrt of eigenvalues
+smoke_ca$sv
+```
+
+
+```{r}
+head(smoke_ca$rowcoord)
+```
+
+
+```{r}
+head(smoke_ca$colcoord)
+
+```
+```{r}
+summary(smoke_ca)
+```
+
+eigenvalues and relative percentages of explained inertia are given for all available dimensions.
+Dimension 1 explains 87.8% Pearson χ2 while dimension 2 explains 11.8% of Pearson χ2. Dimension 3 accounts for the rest (0.5%)
+
+We can see that in component 2, the percentage of variability that can be explained drops steeply. It indicates that the addition of component 3 does not influence the data diversity that can be explained. So that component 1 and component 2 are chosen. The total percentage of variability that can be explained through the two selected components is about 99.5%
+
+
+```{r}
+plot(smoke_ca)
+```
+Along dimension 1, staff groups could be considered roughly equally spaced, but for smoking frequency none is quite different.
+
+senior employees has a association with none smoking habit, junior managers seems to smoke heavily and  junior employees has association with medium smoking habits.
+
+# Q2
+#################################################
+In this question we can consider only 4 variables and then all variables for the analysis
+
+## Lets conside first 4 variables
+(records of four questions on attitude towards science with responses on a five-point scale (1=agree strongly to 5=disagree strongly) )
+
+```{r}
+wg93[,1:4]
+```
+
+
+```{r}
+mjca(wg93[,1:4])
+```
+Dimension 1 explains 44.91% Pearson χ2 while dimension 2 explains 34.2% of Pearson χ2.
+We can see that total dimensions don't explain 100%.
+
+```{r}
+summary(mjca(wg93[,1:4], lambda = "Burt"))
+```
+
+```{r}
+plot.mjca(mjca(wg93[,1:4]))
+```
+
+
+
+
+#########################################################
+## Analysis using all the variables
+
+```{r}
+# load packages
+require(FactoMineR)
+require(ggplot2)
+```
+
+```{r}
+data(wg93)
+```
+
+
+
+```{r}
+# number of categories per variable
+wgapply = apply(wg93, 2, function(x) nlevels(as.factor(x)))
+wgapply
+```
+
+
+
+```{r}
+# apply MCA
+mca1 = MCA(wg93, graph = FALSE)
+```
+
+
+
+```{r}
+# table of eigenvalues
+mca1$eig
+```
+
+
+
+```{r}
+# column coordinates
+head(mca1$var$coord)
+
+```
+
+
+
+```{r}
+# row coordinates
+head(mca1$ind$coord)
+```
+```{r}
+summary(MCA(wg93, graph = FALSE))
+```
+Here Dimensions Cumulative variance account for 100%
+
+
+```{r}
+# data frames for ggplot
+mca1_vars_df = data.frame(mca1$var$coord, Variable = rep(names(wgapply),wgapply))
+mca1_obs_df = data.frame(mca1$ind$coord)
+
+```
+```{r}
+# plot of variable categories
+ggplot(data = mca1_vars_df, aes(x = Dim.1, y = Dim.2, label = rownames(mca1_vars_df))) + 
+    geom_hline(yintercept = 0, colour = "gray70") + geom_vline(xintercept = 0, 
+    colour = "gray70") + geom_text(aes(colour = Variable)) + ggtitle("MCA plot of variables using R package FactoMineR")
+
+```
+
+```{r}
+# MCA plot of observations and categories
+ggplot(data = mca1_obs_df, aes(x = Dim.1, y = Dim.2)) + geom_hline(yintercept = 0, 
+    colour = "gray70") + geom_vline(xintercept = 0, colour = "gray70") + geom_point(colour = "gray50", 
+    alpha = 0.7) + geom_density2d(colour = "gray80") + geom_text(data = mca1_vars_df, 
+    aes(x = Dim.1, y = Dim.2, label = rownames(mca1_vars_df), colour = Variable)) + 
+    ggtitle("MCA plot of variables using R package FactoMineR") + scale_colour_discrete(name = "Variable")
+```
+
+
+```{r}
+# default biplot in FactoMineR
+plot(mca1)
+```
+
+
+

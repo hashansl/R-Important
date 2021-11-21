@@ -1,0 +1,62 @@
+---
+title: "Chapter-02- working with date and time objects"
+author: "PGIS/M/DTS/20/09"
+date: "9/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Mainly Lubridate package
+
+#### Formats
+
+#### Year: yy yyyy
+#### Month: m(one digit) mm(two digits) mmm(three characters) mmmm(full month name)
+#### Date: d dd ddd dddd
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```

@@ -1,0 +1,122 @@
+---
+title: "Assignment 5"
+author: "PGIS/M/DTS/20/09"
+date: "8/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(datasets)
+data("swiss")
+library(ggplot2)
+library(ggrepel)
+library(smacof)
+```
+
+```{r}
+head(swiss)
+```
+
+```{r}
+str(swiss)
+```
+Having 6 dimensions, it is not possible to visualize the objects(=provinces) in 2dimensional space without dimensionality reduction. MDS will do it for us. The first step is generation of a proximity matrix out of the current raw data. The proximity values can be calculated using either Euclidean distance function, Correlation, or any other function which can be used and justified as a proximity measure. 
+```{r}
+swiss_provinces_scale = scale(swiss)
+swiss_dist = dist(x = swiss_provinces_scale)
+swiss_mds= mds(delta = swiss_dist , ndim = 2 , type = "ratio")
+swiss_mds
+```
+As we can see in the results, the Stress−1 value: 0.141 , which is a fair match (acceptable) .Since there is dimensionality reduction, there is little stress.
+
+
+We can plot the MDS configuration of Swiss Provinces.
+```{r}
+ggplot() + geom_point(data = as.data.frame(swiss_mds$conf) , mapping = aes(x = D1, y = D2), color = "blue", alpha = 0.5) + labs(title = "figure4: MDS configuration of Swiss provinces ")
+```
+As one can see, most of the observations are concentrated in somewhat left to the map. This means that there is not much difference among these observations. However, the interesting observations are the ones which located far from the maddening crowd! Specially there are one observation which have clearly lied out of the cloud.Thus, that may be outlier!
+
+
+```{r}
+perf = substr(x = as.character(rownames(swiss)), start = 1, stop = 3)
+
+ggplot() + geom_point(data = as.data.frame(swiss_mds$conf) , mapping = aes(x = D1, y = D2), color = "blue", alpha = 0.5) + geom_text_repel(data =data.frame(perf ,swiss_mds$conf), mapping = aes(x=D1, y=D2 , label = perf)  ) + labs(title = "figure5:  MDS configuration of Swiss provinces with labels")
+```
+According to above figure, the “V” seems like a outlier,
+
+
+
+# (b)
+Refer the data matrix which represents the sum of the dissimilarities between the World War II politicians given in the lecture note of Multidimensional scaling.  Apply NMMDS  to this Data set, and interpret results
+
+```{r}
+dissimilarities_data <- data.frame(
+  Name=c("R1","R2","D1","D2","R3","R4","R5","D3","D4","D5","D6","R6","R7","R8","D7"),
+  R1=c(0,8,15,15,10,9,7,15,16,14,15,16,7,11,13),
+  R2=c(8,0,17,12,13,13,12,16,17,15,16,17,13,12,16),
+  D1=c(15,17,0,9,16,12,15,5,5,6,5,4,11,10,7),
+  D2=c(15,12,9,0,14,12,13,10,8,8,8,6,15,10,7),
+  R3=c(10,13,16,14,0,8,9,13,14,12,12,12,10,11,11),
+  R4=c(9,13,12,12,8,0,7,12,11,10,9,10,6,6,10),
+  R5=c(7,12,15,13,9,7,0,17,16,15,14,15,10,11,13),
+  D3=c(15,16,5,10,13,12,17,0,4,5,5,3,12,7,6),
+  D4=c(16,17,5,8,14,11,16,4,0,3,2,1,13,7,5),
+  D5=c(14,15,6,8,12,10,15,5,3,0,1,2,11,4,6),
+  D6=c(15,16,5,8,12,9,14,5,2,1,0,1,12,5,5),
+  R6=c(16,17,4,6,12,10,15,3,1,2,1,0,12,6,4),
+  R7=c(7,13,11,15,10,6,10,12,13,11,12,12,0,9,13),
+  R8=c(11,12,10,10,11,6,11,7,7,4,5,6,9,0,9),
+  D7=c(13,16,7,7,11,10,13,6,5,6,5,4,13,9,0)
+)
+```
+
+```{r}
+rownames(dissimilarities_data) <- dissimilarities_data$Name
+
+dissimilarities_data <- dissimilarities_data[,-1]
+dissimilarities_data
+```
+```{r}
+dissimilarities_matrix<-data.matrix(dissimilarities_data)
+
+```
+
+```{r}
+library(vegan)
+```
+
+```{r}
+# Running NMDS in vegan (metaMDS)
+dissimilarities_NMS <-
+  metaMDS(dissimilarities_matrix,
+          distance = "bray",
+          k = 3,
+          maxit = 999, 
+          trymax = 500,
+          wascores = TRUE)
+```
+The NMDS will run to a minimized stress value. As we can see, The stress value is less than 0.05, we can consider this as excellent value.
+
+
+This is a Shepard diagram with correlation statistics indicating the fit between ordiantion distances and observed dissimilarities
+
+```{r}
+# Shepards test/goodness of fit
+goodness(dissimilarities_NMS) # Produces a results of test statistics for goodness of fit for each point
+
+stressplot(dissimilarities_NMS) # Produces a Shepards diagram
+```
+Large scatter around the line suggests that original dissimilarities are not well preserved in the reduced number of dimensions.  Looks pretty good in this case.
+
+```{r}
+# Plotting points in ordination space
+plot(dissimilarities_NMS, "sites")   # Produces distance 
+orditorp(dissimilarities_NMS, "sites")   # Gives points labels
+```
+
+As in the figure, R1,R1,D2 are seems like outliers!
+

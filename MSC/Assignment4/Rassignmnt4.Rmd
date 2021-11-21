@@ -1,0 +1,130 @@
+---
+title: "Rassignm4"
+author: "PGIS/M/DTS/20/09"
+date: "8/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+
+```{r}
+library(dplyr)
+library(lavaan)
+```
+
+
+```{r}
+ds <- read.csv("./BinW.csv")
+ds <- subset(ds, select = -c(id))
+head(ds)
+```
+Now , we write the model, then fit the model using lavaan syntax
+```{r}
+model <- '
+  # measurement model
+    A =~ ses + genderid + perfgoal
+    B =~ achieve + mastery + interest
+    C =~ anxiety + pgoal_MS 
+  # regressions
+    A ~ B
+    C ~ A + B
+    
+  #residual correlation
+  ses ~~ mastery
+  anxiety ~~ achieve 
+  interest ~~ perfgoal
+'
+```
+
+```{r}
+fit <- sem(model, data = ds)
+```
+
+```{r}
+summary(fit,standardized = TRUE,  fit.measures=TRUE)
+```
+Model Test User Model and Model Test Baseline Model P values are less than 0.05 model seems not significant. But the CFI and TLI values are less than 0.90 because of that we can assume that we have normal fit.  RMSEA value should be less than 0.05 but it is greater than 0.05. SRMR Value  is greater  than 0.05 and we can consider it as normal value.
+
+Latent variables  P values are (less than 0.05) significant. Regression relations ships are also significant( P values less than 0.05). 
+
+However, we can note that following covariances and variances are not significant, since the p value is > 0.05  
+ 
+  ses ~~ mastery
+  anxiety ~~ achieve 
+  interest ~~ perfgoal
+We remove the nonsignificant  covariances ,and refit the model.
+
+```{r}
+modificationIndices(fit, minimum.value = 10)
+ 
+```
+
+```{r}
+model2 <- '
+  # measurement model
+    A =~ ses + genderid + perfgoal
+    B =~ achieve + mastery + interest
+    C =~ anxiety + pgoal_MS 
+  # regressions
+    A ~ B
+    C ~ A + B
+    
+'
+```
+
+
+
+```{r}
+fit2 <- sem(model2, data = ds)
+summary(fit2,standardized = TRUE, fit.measures=TRUE)
+```
+The CFI and TLI values are greater than 0.90 becase of that we can assume that we have a good fit.  RMSEA value should be less than 0.05 but it is greater than 0.05. SRMR Value  is less han 0.05 and we can consider it as good value.
+
+Latent variables  P values are (less than 0.05) significant. Regression relations ships are also siginificant( P values less than 0.05). we can note that  covariances and variances are also significant, since the p value is < 0.05 .
+.
+
+```{r}
+coef(fit2)
+```
+Show result in a table,
+
+```{r}
+standardizedsolution(fit2, type ="std.all")
+```
+Model Diagnostics,
+
+We check the mismatch between the actual and estimated covarince matices
+```{r}
+fitted(fit2)
+```
+we can also get the fitted correlation matrix as follows,
+```{r}
+inspect(fit2, what="cor.all")
+```
+now we get the actual correlations
+```{r}
+resid(fit2, "cor")
+```
+
+Note that the |residual > 0.1|for anxiety with ses,achiev,mastry,intrst Hence the model significantly underpredict the association between anxiety with ses,achiev,mastry,intrst.
+
+If model does not fit well, we can inspect the modification indices and their corresponding expected parameter changes.
+```{r}
+mi <- modificationindices(fit2)
+subset(mi ,mi >4)
+```
+
+```{r}
+anova(fit,fit2)
+```
+
+```{r}
+library(semPlot)
+semPaths(fit, "std", edge.label.cex = 0.9, curvePivot = TRUE, layout = "tree", fade = FALSE)
+```

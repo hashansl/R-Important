@@ -1,0 +1,96 @@
+---
+title: "Assignment"
+author: "PGIS/M/DTS/20/09"
+date: "6/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<html>
+
+<h1 style = "font-size:45px;font-family: Comic Sans MS;text-align: center;background-color:#800000;color:#FFFFFF">Assignment 3</h1>
+
+</html>
+
+
+```{r}
+dataset <- read.csv("./mmreg.csv", header = TRUE)
+newheaders <- c("Control","Concept","Motivation","Read","Write","Math","Science","Sex")
+colnames(dataset) <- newheaders
+#head(dataset)
+
+library(knitr)
+library(kableExtra)
+kable(dataset[0:10,])
+```
+
+summary statistics.
+```{r}
+summary(dataset)
+```
+```{r}
+library("ccaPP")
+```
+```{r}
+x <- dataset[,1:3]
+y <--dataset[,4:7]
+```
+
+
+```{r}
+head(x)
+head(y)
+```
+```{r}
+spearman <- maxCorGrid(x, y)
+spearman
+```
+
+In X variables (psychological) set, the variable Control is have Negligible Postive correlation with variable Concept and Motivation. Also, variable Concept and Motivation have Negligible Positive correlation <br><br>
+
+In Y variables (Acadamic) set, the variable Read is have Moderate positive correlation with variable Write, Math, Science. The variable Write is have Moderate positive correlation with the variable Math and Science. Also, the variable Math have a Moderate positive correlation with Science. 
+<br><br>
+
+When considering the correlation between X set of variables with Y set of variables, Control with Read, Write, Math, Science have Low negative correlation.
+
+
+```{r}
+spearman$a
+spearman$b
+```
+
+
+```{r}
+maxCorGrid(x, y, method = "kendall")
+```
+
+```{r}
+maxCorGrid(x, y, method = "M")
+```
+
+the Spearman correlation gives maxumum corrlation of 0.4394163 and Kendall rank correlation gives maximum correlation of 0.3013025.
+
+
+
+
+```{r}
+maxCorGrid(x, y, method = "pearson")
+```
+```{r}
+maxCorGrid(x, y, consistent = TRUE)
+```
+```{r}
+maxCorGrid(x, y, method = "kendall", consistent = TRUE)
+```
+```{r}
+permTest(x, y, nCores = 2, seed = 2014)
+```
+
+```{r}
+permTest(x, y, method = "kendall", nCores = 2, seed = 2014)
+```
+
+tests strongly reject the null hypothesis of no association between the two
+data sets.

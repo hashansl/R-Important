@@ -1,0 +1,79 @@
+---
+title: "Tutorial1"
+author: "PGIS/M/DTS/20/09"
+date: "9/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(TSstudio)
+data("USVSales", package = "TSstudio")
+```
+
+## Class ts (time series)
+
+```{r}
+class(USVSales)
+head(USVSales)
+```
+Data set can be assign to variable rather than loading to env (usually loadas to env)
+```{r}
+USV_Sales <- TSstudio::USVSales
+```
+
+## In here class is data.frame
+```{r}
+data("iris", package = "datasets")
+str(iris)
+class(iris)
+```
+
+```{r}
+summary(iris)
+```
+
+## Quering the data
+### datafram row column  index way: df[row,column]
+```{r}
+iris[1:5,2]
+```
+### Specifying specific variable in df
+### df.variablename[rows]
+```{r}
+iris$Sepal.Width[1:5]
+```
+### Row index and column name i df
+### df[rows, "column name"]
+
+```{r}
+iris[1:5, "Sepal.Width"]
+```
+### Or we can use a function
+```{r}
+iris[1:5, which(colnames(iris) == "Sepal.Width")]
+```
+### Taking two columns with specific rows
+```{r}
+iris[,c(2,3)]
+```
+## Subset the dataframe (not dplyr)
+```{r}
+setosa_df_1 <- subset(x = iris, iris$Species =="setosa")
+head(setosa_df_1)
+```
+### Subset the dataframe using filter
+```{r}
+setosa_df_2 <- iris[which(iris$Species=="setosa"),]
+head(setosa_df_2)
+```
+```{r}
+identical(setosa_df_1,setosa_df_2)
+```
+
+
+
+
